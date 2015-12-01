@@ -1,4 +1,3 @@
-require "guard/cli/environments/bundler"
 require "guard/commander"
 require "guard/guardfile/generator"
 
@@ -12,7 +11,6 @@ module Guard
 
         def start_guard
           # TODO: just to make sure tests are ok
-          Bundler.new.verify unless @options[:no_bundler_warning]
           Guard.start(@options)
         rescue Dsl::Error,
                Guardfile::Evaluator::NoPluginsError,

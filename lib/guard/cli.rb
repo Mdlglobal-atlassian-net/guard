@@ -66,12 +66,6 @@ module Guard
                   aliases: "-i",
                   banner: "Turn off completely any Guard terminal interactions"
 
-    method_option :no_bundler_warning,
-                  type: :boolean,
-                  default: false,
-                  aliases: "-B",
-                  banner: "Turn off warning when Bundler is not present"
-
     # Listen options
     method_option :latency,
                   type: :numeric,

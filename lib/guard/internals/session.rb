@@ -15,7 +15,6 @@ module Guard
       DEFAULT_OPTIONS = {
         clear: false,
         debug: false,
-        no_bundler_warning: false,
 
         # User defined scopes
         group: [],

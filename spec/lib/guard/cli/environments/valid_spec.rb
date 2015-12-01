@@ -1,5 +1,4 @@
 require "guard/cli/environments/valid"
-require "guard/cli/environments/bundler"
 
 RSpec.describe Guard::Cli::Environments::Valid do
   subject { described_class.new(options) }
@@ -11,82 +10,40 @@ RSpec.describe Guard::Cli::Environments::Valid do
   end
 
   describe "#start_guard" do
-    let(:bundler) { instance_double("Guard::Cli::Environments::Bundler") }
-
-    before do
-      allow(Guard::Cli::Environments::Bundler).to receive(:new).
-        and_return(bundler)
-
-      allow(bundler).to receive(:verify)
+    it "starts guard" do
+      expect(Guard).to receive(:start)
+      subject.start_guard
     end
 
-    context "with a valid bundler setup" do
-      before do
-        allow(bundler).to receive(:verify)
-
-        allow(options).to receive(:[]).with(:no_bundler_warning).
-          and_return(false)
-      end
-
-      it "starts guard" do
-        expect(Guard).to receive(:start)
-        subject.start_guard
-      end
-
-      it "start guard with options" do
-        expect(Guard).to receive(:start).with(options)
-        subject.start_guard
-      end
-
-      it "returns exit code" do
-        exitcode = double("exitcode")
-        expect(Guard).to receive(:start).and_return(exitcode)
-        expect(subject.start_guard).to be(exitcode)
-      end
-
-      [
-        Guard::Dsl::Error,
-        Guard::Guardfile::Evaluator::NoPluginsError,
-        Guard::Guardfile::Evaluator::NoGuardfileError,
-        Guard::Guardfile::Evaluator::NoCustomGuardfile
-      ].each do |error_class|
-        context "when a #{error_class} error occurs" do
-          before do
-            allow(Guard).to receive(:start).
-              and_raise(error_class, "#{error_class} error!")
-          end
-
-          it "aborts" do
-            expect { subject.start_guard }.to raise_error(SystemExit)
-          end
-
-          it "shows error message" do
-            expect(Guard::UI).to receive(:error).with(/#{error_class} error!/)
-            begin
-              subject.start_guard
-            rescue SystemExit
-            end
-          end
-        end
-      end
+    it "start guard with options" do
+      expect(Guard).to receive(:start).with(options)
+      subject.start_guard
     end
 
-    context "without no_bundler_warning option" do
-      subject { described_class.new(no_bundler_warning: false) }
+    it "returns exit code" do
+      exitcode = double("exitcode")
+      expect(Guard).to receive(:start).and_return(exitcode)
+      expect(subject.start_guard).to be(exitcode)
+    end
 
-      it "verifies bundler presence" do
-        expect(bundler).to receive(:verify)
-        subject.start_guard
-      end
-
-      context "without a valid bundler setup" do
+    [
+      Guard::Dsl::Error,
+      Guard::Guardfile::Evaluator::NoPluginsError,
+      Guard::Guardfile::Evaluator::NoGuardfileError,
+      Guard::Guardfile::Evaluator::NoCustomGuardfile
+    ].each do |error_class|
+      context "when a #{error_class} error occurs" do
         before do
-          allow(bundler).to receive(:verify).and_raise(SystemExit)
+          allow(Guard).to receive(:start).
+            and_raise(error_class, "#{error_class} error!")
         end
 
-        it "does not start guard" do
-          expect(Guard).to_not receive(:start)
+        it "aborts" do
+          expect { subject.start_guard }.to raise_error(SystemExit)
+        end
 
+        it "shows error message" do
+          expect(Guard::UI).to receive(:error).with(/#{error_class} error!/)
           begin
             subject.start_guard
           rescue SystemExit
@@ -95,23 +52,9 @@ RSpec.describe Guard::Cli::Environments::Valid do
       end
     end
 
-    context "with no_bundler_warning option" do
-      subject { described_class.new(no_bundler_warning: true) }
-
-      it "does not verify bundler presence" do
-        expect(bundler).to_not receive(:verify)
-        subject.start_guard
-      end
-
-      it "starts guard" do
-        expect(Guard).to receive(:start)
-        subject.start_guard
-      end
-    end
-
     describe "return value" do
       let(:exitcode) { double("Fixnum") }
-      subject { described_class.new(no_bundler_warning: true) }
+      subject { described_class.new }
 
       before do
         allow(Guard).to receive(:start).and_return(exitcode)
